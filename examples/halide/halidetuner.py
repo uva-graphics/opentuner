@@ -81,6 +81,8 @@ parser.add_argument('--tmp-dir', default='/run/shm'
                     help='Where to store generated tests')
 parser.add_argument('--settings-file',
                     help='Override location of json encoded settings')
+parser.add_argument('--final-cfg-file', default=os.path.expanduser('finalcfg'),
+                    help='Where to store the final configuration')
 parser.add_argument('--random-test', action='store_true',
                     help='Generate a random configuration and run it')
 parser.add_argument('--random-source', action='store_true',
@@ -133,6 +135,7 @@ class HalideTuner(opentuner.measurement.MeasurementInterface):
     self.post_dominators = post_dominators(self.settings)
     if not args.input_size:
       args.input_size = self.settings['input_size']
+    self.min_time = float('inf')
     self.min_collection_cost = float('inf')
 
   def compute_order_parameter(self, func):
@@ -369,6 +372,7 @@ class HalideTuner(opentuner.measurement.MeasurementInterface):
           return None
         log.info('success: %.4f (collection cost %.2f + %.2f)',
                  time, compile_result['time'], result['time'])
+        self.min_time = min(self.min_time, time)
         self.min_collection_cost = min(
           self.min_collection_cost, result['time'])
         return time
@@ -394,7 +398,11 @@ class HalideTuner(opentuner.measurement.MeasurementInterface):
   def save_final_config(self, configuration):
     """called at the end of tuning"""
     print 'Final Configuration:'
-    print self.cfg_to_schedule(configuration.data)
+    schedule = self.cfg_to_schedule(configuration.data)
+    print schedule
+    if args.final_cfg_file:
+        final_result = {'schedule' : schedule, 'time' : self.min_time}
+        open(args.final_cfg_file, 'w').write(json.dumps(final_result))
 
   def debug_schedule(self, filename, source):
     open(filename, 'w').write(source)
