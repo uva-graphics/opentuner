@@ -788,7 +788,7 @@ class PermutationParameter(ComplexParameter):
         pm[n] = link
     # Reversed partial map    
     pm2 = {}
-    for k,v in pm.items()
+    for k,v in pm.items():
         pm2[v] = k
     # Fix conflicts
     for k in pm:
