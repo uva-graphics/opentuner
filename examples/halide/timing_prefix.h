@@ -1,4 +1,7 @@
 #include <Halide.h>
+
+using namespace Halide;
+
 #include <stdio.h>
 #include <sys/time.h>
 #include <unistd.h>
